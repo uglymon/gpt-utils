@@ -1,6 +1,5 @@
 import { ChatCompletionFunctions, ChatCompletionRequestMessageFunctionCall } from 'openai';
 import mariadb from 'mariadb';
-import { on } from 'events';
 import { yellow, green, blue } from 'chalk';
 
 export const dbfunctions: ChatCompletionFunctions[] = [
@@ -131,6 +130,37 @@ export class DBManager {
                 }
             }
             conn.release();
+        } else {
+            result.message = 'unknown function';
+        }
+        console.log(`${yellow('function result')} : ${blue(result.message)} `);
+        return result;
+    }
+}
+
+export const shellfunctions: ChatCompletionFunctions[] = [
+    {
+        name: 'run',
+        description: 'run shell command',
+        parameters: {
+            type: 'object',
+            properties: {
+                command: {
+                    type: 'string',
+                    description: 'command to run'
+                },
+            },
+            required: ['command']
+        },
+    }
+];
+export class ShellManager {
+    static async run(info: ChatCompletionRequestMessageFunctionCall) {
+        const function_name = info.name;
+        const function_args = JSON.parse(info.arguments as string);
+        let result = { message: 'ok', data: '' as any };
+        console.log(`${yellow('function call')} : ${green(function_name)}(`, function_args, green(')'));
+        if (function_name === 'run') {
         } else {
             result.message = 'unknown function';
         }
